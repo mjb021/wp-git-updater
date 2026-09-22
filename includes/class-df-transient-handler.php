@@ -62,7 +62,7 @@ function gu_github_release_updater( $transient ) {
         $release_data  = get_transient( $transient_key );
 
         if ( false === $release_data ) {
-            $api_url = 'https://github.com' . $org . '/' . $repo . '/releases/latest';
+            $api_url = 'https://api.github.com/repos/' . $org . '/' . $repo . '/releases/latest';
             error_log( 'Git Updater Debug: [API CALL] Fetching data from GitHub: ' . $api_url );
             
             $response = wp_remote_get( $api_url, gu_get_github_api_args() );
@@ -90,7 +90,7 @@ function gu_github_release_updater( $transient ) {
         $obj->slug        = $wp_plugin_dirname; 
         $obj->plugin      = $plugin_slug;
         $obj->new_version = $new_version;
-        $obj->url         = 'https://github.com' . $org . '/' . $repo;
+        $obj->url         = 'https://github.com/' . $org . '/' . $repo;
         $obj->package     = '';
         
         if ( 'release' === $plugin_info['source_type'] && ! empty( $release_data->assets ) && is_array( $release_data->assets ) ) {
