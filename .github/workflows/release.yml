@@ -39,7 +39,7 @@ jobs:
           cd build
           
           # Compile clean zip excluding development noise and config maps
-          zip -r ../\(PLUGIN_SLUG.zip \)PLUGIN_SLUG \
+          zip -r ../$PLUGIN_SLUG.zip $PLUGIN_SLUG \
             -x "*.git*" \
             -x "*.github*" \
             -x "*tests*" \
