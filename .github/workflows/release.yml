@@ -21,7 +21,7 @@ jobs:
         run: |
           # Read version from VERSION file and strip whitespace/newlines safely
           VERSION=$(cat VERSION | xargs)
-          echo "VERSION=VERSION" >> GITHUB_ENV
+          echo "VERSION=$VERSION" >> GITHUB_ENV
           echo "Extracted version from file: $VERSION"
 
       - name: Build Production ZIP Package
