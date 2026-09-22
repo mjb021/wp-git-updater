@@ -9,7 +9,7 @@
  * Requires PHP: 8.1
  * Tested up to: 6.8.9
  * Description: A plugin to fill dog breed options in WPForms.
- * Version: 0.1.0
+ * Version: 0.1.1a
  * Author: Mark Blom
  * License: GPL-3.0+
  * License URI: http://www.gnu.org/licenses/gpl-3.0.txt
