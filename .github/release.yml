@@ -1,0 +1,73 @@
+name: Generate Production Release
+
+on:
+  push:
+    branches:
+      - main # Triggers automatically on every commit or merge to the main branch
+
+jobs:
+  build_release:
+    name: Build and Publish Release Assets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to allow the workflow to create releases, tags, and upload assets
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4 # Latest stable release (Node.js 20 native execution)
+
+      - name: Extract Version Number
+        id: get_version
+        run: |
+          # Read version from VERSION file and strip whitespace/newlines safely
+          VERSION=\$(cat VERSION | xargs)
+          echo "VERSION=VERSION" >> GITHUB_ENV
+          echo "Extracted version from file: \$VERSION"
+
+      - name: Build Production ZIP Package
+        run: |
+          # Establish the plugin folder layout name matching WordPress expectations
+          PLUGIN_SLUG="wp-git-updater"
+          
+          # Create a temporary deployment directory structure
+          mkdir -p build/\$PLUGIN_SLUG
+          
+          # Copy all active files to the production container root maps
+          rsync -RCr --exclude 'build' . build/\$PLUGIN_SLUG/
+          
+          # Change tracking location to the build target directory
+          cd build
+          
+          # Compile clean zip excluding development noise and config maps
+          zip -r ../\(PLUGIN_SLUG.zip \)PLUGIN_SLUG \
+            -x "*.git*" \
+            -x "*.github*" \
+            -x "*tests*" \
+            -x "*pyproject.toml*" \
+            -x "*.pre-commit-config.yaml*" \
+            -x "*node_modules*" \
+            -x "*.editorconfig*" \
+            -x "*.distignore*"
+            
+          cd ..
+          echo "Production ZIP compiled successfully: \$PLUGIN_SLUG.zip"
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2 # Modern stable release with API architecture patches
+        with:
+          # Dynamically create the tag (e.g., v1.1.4) based on the VERSION file
+          tag_name: v\${{ env.VERSION }}
+          name: Release \${{ env.VERSION }}
+          body: |
+            ## Production Release \${{ env.VERSION }}
+            
+            This is an automated production build for version \${{ env.VERSION }}, generated from the latest commit on `main`.
+            
+            ### Installation Note
+            Download the pre-compiled **`wp-git-updater.zip`** asset below for a clean installation without developmental files.
+          draft: false
+          prerelease: false
+          files: |
+            wp-git-updater.zip
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }} # Native token supplied automatically by GitHub
