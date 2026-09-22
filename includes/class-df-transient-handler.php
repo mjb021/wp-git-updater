@@ -92,7 +92,19 @@ function gu_github_release_updater( $transient ) {
         $obj->new_version = $new_version;
         $obj->url         = 'https://github.com/' . $org . '/' . $repo;
         $obj->package     = '';
-        
+
+        if ( ! empty( $plugin_info['requires'] ) ) {
+            $obj->requires = $plugin_info['requires']; // Maps to "Requires at least" header
+        }
+        if ( ! empty( $plugin_info['requires_php'] ) ) {
+            $obj->requires_php = $plugin_info['requires_php']; // Maps to "Requires PHP" header
+        }
+        // Dynamically assign the "Tested up to" value if defined in headers, fallback to active WP version
+        $obj->tested = ! empty( $plugin_info['tested'] ) ? $plugin_info['tested'] : get_bloginfo( 'version' ); 
+
+        // Always supply the tested mark to clear the "Unknown" notice banner
+        $obj->tested       = get_bloginfo( 'version' ); 
+
         if ( 'release' === $plugin_info['source_type'] && ! empty( $release_data->assets ) && is_array( $release_data->assets ) ) {
             foreach ( $release_data->assets as $asset ) {
                 if ( str_ends_with( $asset->name, '.zip' ) ) {

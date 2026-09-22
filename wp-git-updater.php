@@ -5,6 +5,9 @@
  * GitHub Plugin URI: https://github.com/mjb021/wp-git-updater
  * Release Asset: true
  * Primary Branch: main
+ * Requires at least: 6.2
+ * Requires PHP: 8.1
+ * Tested up to: 6.8.9
  * Description: A plugin to fill dog breed options in WPForms.
  * Version: 0.1.0
  * Author: Mark Blom
