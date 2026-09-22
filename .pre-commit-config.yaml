@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: sync-version
+        name: Synchroniseer versie naar WordPress en Python
+        language: python
+        files: ^VERSION$
+        entry: |
+          python3 -c "
+          import re, pathlib
+          v = pathlib.Path('VERSION').read_text().strip()
+          for p in ['src/wp-git-updater/__init__.py', 'wp-git-updater.php']:
+              f = pathlib.Path(p)
+              if f.is_file():
+                  c = f.read_text()
+                  c = re.sub(r'__version__\s*=\s*[\'\"][^\'\"]+[\'\"]', f'__version__ = \"{v}\"', c)
+                  c = re.sub(r'(Version:\s*)[^\s\n\r]+', r'\g<1>' + v, c)
+                  c = re.sub(r'(define\(\s*[\'\"][^\'\"]*VERSION[\'\"]\s*,\s*[\'\"])[^\'\"]+([\'\"]\s*\);)', r'\g<1>' + v + r'\g<2>', c, flags=re.IGNORECASE)
+                  f.write_text(c)
+                  print(f'✅ Versie gesynchroniseerd in: {p}')
+          "
