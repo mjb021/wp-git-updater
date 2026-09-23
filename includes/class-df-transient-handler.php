@@ -115,8 +115,7 @@ function gu_github_release_updater( $transient ) {
         }
 
         if ( empty( $obj->package ) && ! empty( $release_data->zipball_url ) ) {
-            $token = get_option( 'gu_github_api_token' );
-            $obj->package = ! empty( $token ) ? add_query_arg( 'access_token', trim( $token ), $release_data->zipball_url ) : $release_data->zipball_url;
+            $obj->package = $release_data->zipball_url;
         }
 
         if ( version_compare( $current_version, $new_version, '<' ) && ! empty( $obj->package ) ) {
@@ -220,4 +219,28 @@ function gu_inject_plugin_details( $result, $action, $args ) {
     ];
 
     return $res;
+}
+
+// Hook into the native WordPress HTTP engine to supply credentials securely during download cycles
+add_filter( 'http_request_args', 'gu_inject_download_authorization_header', 10, 2 );
+
+/**
+ * HTTP REQUEST MODIFIER: Intercepts WordPress download streams targeting GitHub 
+ * and attaches the Personal Access Token securely inside the HTTP headers.
+ */
+function gu_inject_download_authorization_header( $parsed_args, $url ) {
+    // Only intercept requests that are actively trying to communicate with GitHub
+    if ( str_contains( $url, 'api.github.com' ) || str_contains( $url, 'github.com' ) ) {
+        $token = get_option( 'gu_github_api_token' );
+        
+        if ( ! empty( $token ) ) {
+            if ( ! isset( $parsed_args['headers'] ) || ! is_array( $parsed_args['headers'] ) ) {
+                $parsed_args['headers'] = array();
+            }
+            
+            // Inject the token dynamically using the official Bearer/Token header standard
+            $parsed_args['headers']['Authorization'] = 'token ' . trim( $token );
+        }
+    }
+    return $parsed_args;
 }
