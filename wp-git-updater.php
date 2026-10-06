@@ -8,7 +8,7 @@
  * Requires at least: 6.2
  * Requires PHP: 8.1
  * Tested up to: 6.8.9
- * Description: A plugin to fill dog breed options in WPForms.
+ * Description: A plugin to Auto update wordpress from github.
  * Version: 0.1.1b
  * Author: Mark Blom
  * License: GPL-3.0+
