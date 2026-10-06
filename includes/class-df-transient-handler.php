@@ -229,8 +229,17 @@ add_filter( 'http_request_args', 'gu_inject_download_authorization_header', 10, 
  * and attaches the Personal Access Token securely inside the HTTP headers.
  */
 function gu_inject_download_authorization_header( $parsed_args, $url ) {
-    // Only intercept requests that are actively trying to communicate with GitHub
-    if ( str_contains( $url, 'api.github.com' ) || str_contains( $url, 'github.com' ) ) {
+    // 1. If the request is redirected to GitHub's AWS storage, REMOVE the authorization header.
+    // Amazon S3 does not accept this header and will return a 400 Bad Request error.
+    if ( str_contains( $url, '://githubusercontent.com' ) ) {
+        if ( isset( $parsed_args['headers']['Authorization'] ) ) {
+            unset( $parsed_args['headers']['Authorization'] );
+        }
+        return $parsed_args;
+    }
+
+    // 2. Only inject the token if the request is actively targeting ://github.com or github.com
+    if ( str_contains( $url, '://github.com' ) || str_contains( $url, 'github.com' ) ) {
         $token = get_option( 'gu_github_api_token' );
         
         if ( ! empty( $token ) ) {
@@ -238,8 +247,8 @@ function gu_inject_download_authorization_header( $parsed_args, $url ) {
                 $parsed_args['headers'] = array();
             }
             
-            // Inject the token dynamically using the official Bearer/Token header standard
-            $parsed_args['headers']['Authorization'] = 'token ' . trim( $token );
+            // Inject the token dynamically using the modern Bearer token standard required by GitHub
+            $parsed_args['headers']['Authorization'] = 'Bearer ' . trim( $token );
         }
     }
     return $parsed_args;
